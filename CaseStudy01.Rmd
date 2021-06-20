@@ -30,8 +30,8 @@ these are words
 ```{r, echo=FALSE, message = FALSE, warning=FALSE}
 library(usmap)
 st_data = breweries %>% count(State) %>% mutate(fips = fips(trimws(State))) 
-plot_usmap(data = st_data,values="n") + theme(legend.position = "right") + scale_fill_continuous(low = "white", high ="darkgreen", 
-                          name = "Brewery Count (%)",label = scales::comma,
+plot_usmap(data = st_data,values="n") + theme(legend.position = "right") + scale_fill_continuous(low = "white", high ="brown", 
+                          name = "Brewery Count",label = scales::comma,
                           limits = c(0,50))
 ```
 \
@@ -63,21 +63,41 @@ plot_usmap(data = abv,values="n_valid")+ theme(legend.position = "right") + scal
                           limits = c(0,300))
 ```
 \
-This shows mean ibu by state
+The above plot shows a map of the United States the color of each state showing how many breweries are in each state. Below, the five states the highest brewery count are pulled out for easy reference.
 \
 ```{r, echo=FALSE, message = FALSE, warning=FALSE}
-ibu = full_data %>% select(State,fips,IBU) %>% group_by(State) %>% 
-  summarise(avg_ibu = mean(IBU,na.rm = TRUE),med_ibu = median(IBU,na.rm=TRUE), n_valid = sum(!is.na(IBU)),fips = unique(fips))
-plot_usmap(data = ibu,values="med_ibu") + theme(legend.position = "right") + scale_fill_continuous(low = "white", high ="darkorange", 
-                          name = "Median IBU",label = scales::comma,
-                          limits = c(15,65))
-ibu %>% arrange(med_ibu) %>% mutate(State = factor(State,State)) %>% ggplot(aes(y=State,x=med_ibu)) + geom_bar(stat='identity')
+st_data %>% slice_max(n,n=5) %>% summarise(State,n)
+```
+\
+The states with the fewest breweries have also been pulled out. There are 8 total because of four-way tie for fith fewest breweries.
+\
+```{r, echo=FALSE, message = FALSE, warning=FALSE}
+st_data %>% slice_min(n,n=5) %>% summarise(State,n)
+```
+\
+Base on the visual evidence there is not an even distribution of breweries among the states. Starting with the highest ranking state (Colorado) and moving down the list, the below plot shows how which states the data under anyalysis is coming from.
+\
+```{r, echo=FALSE, message = FALSE, warning=FALSE}
+nst = nrow(st_data)
+nbrew = sum(st_data$n)
+st_data %>% arrange(desc(n)) %>% transmute(percent = n / nbrew) %>% cumsum() %>% ggplot(aes(x=1:nst,y=percent)) + geom_line() + xlab('Top N States') + ylab('Percent Data')
 ```
 \
 This shows the valid ibu data for each state.
 \
 ```{r, echo=FALSE, message = FALSE, warning=FALSE}
-plot_usmap(data = ibu,values="n_valid") + theme(legend.position = 'right') + scale_fill_continuous(low = "white", high ="darkorange", name = "Data Points",label = scales::comma,limits = c(0,150))
+ibu = full_data %>% select(State,fips,IBU) %>% group_by(State) %>% 
+  summarise(avg_ibu = mean(IBU,na.rm = TRUE),med_ibu = median(IBU,na.rm=TRUE), n_valid = sum(!is.na(IBU)),fips = unique(fips))
+plot_usmap(data = ibu,values="med_ibu") + theme(legend.position = "right") + scale_fill_continuous(low = "darkblue", high ="darkorange", 
+                          name = "Median IBU",label = scales::comma,
+                          limits = c(0,65))
+ibu %>% arrange(med_ibu) %>% mutate(State = factor(State,State)) %>% ggplot(aes(y=State,x=med_ibu)) + geom_bar(stat='identity')
+```
+\
+Below the states with the number of beers with IBU scores for each state are shown. States with below 15 ratings are grayed out to highlight them as states with a low amount of data. Another way to view this chart is as the states the are the primary influecers of any further analysis that uses IBU score. 
+\
+```{r, echo=FALSE, message = FALSE, warning=FALSE}
+plot_usmap(data = ibu,values="n_valid") + theme(legend.position = 'right') + scale_fill_continuous(low = "white", high ="darkorange", name = "Data Points",label = scales::comma,limits = c(15,150))
 ```
 ## Noteworthy States
 THe state with maximum ABV
@@ -151,8 +171,8 @@ min_x = min(train[,1])
 max_x = max(train[,1])
 min_y = min(train[,2])
 max_y = max(train[,2])
-Xvals = linspace(min_x,max_x,n=100)
-Yvals = linspace(min_y,max_y,n=100)
+Xvals = linspace(min_x,max_x,n=500)
+Yvals = linspace(min_y,max_y,n=500)
 grids = meshgrid(Xvals,Yvals)
 
 mean_ibu = mean(train$IBU)
@@ -169,7 +189,9 @@ prob_ipa = attr(pred.test,'prob')
 
 prob_ipa[pred.test != 'IPA'] = 1 - prob_ipa[pred.test != 'IPA']
 
-test %>% ggplot(aes(x=ABV,y=IBU,color=prob_ipa)) + geom_tile()
+test %>% ggplot(aes(x=ABV,y=IBU,fill=prob_ipa)) + geom_tile() + theme_bw() +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
 ```
 
 # Popular Styles by State
