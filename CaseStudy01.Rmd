@@ -257,4 +257,6 @@ plot_usmap(data = pop,values="Style") + theme(legend.position = "right")
 ```
 \
 As visually evident the American IPA is the most popular style in the most states. It is also seen the overall Ale style is the most popular broad style of beer in the with a few unique states. It is also interesting that the states are mostly are concentrated in the southeast. 
-\
+
+# Conclusion
+There are only so many resources that any one company has. It is therefore important to allocated these resources in order to develop the best strategies and the desired return. Here, we have looked at how breweries are distributed across the Unites States, where they are concentrated and where they are scarce. We addressed where out data is coming from and how the missing data for each category was handled so that the limitations of this analysis could be understood and determine the scope of conclusions made. The ABV and IBU scores were compared among the states, as well as their ability to predict whether an ALE is an IPA or not. Finally the distribution of favorite beer style by state was generated to inform the which style of beer is most deserving a resources. Each of one these analysis highlight useful market data to inform resource allocation. 
